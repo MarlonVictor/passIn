@@ -3,13 +3,7 @@ import HelloWorld from '../components/HelloWorld.vue'
 </script>
 
 <template>
-  <main>
-    <HelloWorld msg="Hello Word" />
-  </main>
+  <HelloWorld msg="Hello Word" />
 </template>
 
-<style scoped>
-main {
-  margin: auto;
-}
-</style>
+<style scoped></style>
