@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import {
-  Search,
-  MoreHorizontal,
-  ChevronsLeft,
   ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
   ChevronsRight,
-  ChevronRight
+  MoreHorizontal,
+  Search
 } from 'lucide-vue-next'
+
+import { attendees } from '@/data/attendees'
 
 import IconButton from './IconButton.vue'
 import Table from './table/Table.vue'
-import TableHeader from './table/TableHeader.vue'
 import TableCell from './table/TableCell.vue'
-
-const lines = Array.from({ length: 5 })
+import TableHeader from './table/TableHeader.vue'
 </script>
 
 <template>
@@ -53,8 +53,8 @@ const lines = Array.from({ length: 5 })
 
       <tbody>
         <tr
-          v-for="(_, index) in lines"
-          :key="index"
+          v-for="attendee in attendees.slice(0, 5)"
+          :key="attendee.id"
           class="border-b border-white/10 hover:bg-zinc-50/5 transition-colors"
         >
           <TableCell>
@@ -65,15 +65,15 @@ const lines = Array.from({ length: 5 })
               class="size-4 bg-black/20 rounded border-white/10 cursor-pointer"
             />
           </TableCell>
-          <TableCell>1234</TableCell>
+          <TableCell>{{ attendee.id }}</TableCell>
           <TableCell>
             <div class="flex flex-col gap-1">
-              <span class="font-semibold text-white">Marlon Victor</span>
-              <span>cmarlonvictor@gmail.com</span>
+              <span class="font-semibold text-white">{{ attendee.name }}</span>
+              <span>{{ attendee.email }}</span>
             </div>
           </TableCell>
-          <TableCell>7 dias atrás</TableCell>
-          <TableCell>3 dias atrás</TableCell>
+          <TableCell>{{ attendee.createdAt.toISOString() }}</TableCell>
+          <TableCell>{{ attendee.checkedInAt.toISOString() }}</TableCell>
           <TableCell>
             <IconButton transparent>
               <MoreHorizontal class="size-4" />
@@ -84,10 +84,10 @@ const lines = Array.from({ length: 5 })
 
       <tfoot>
         <tr>
-          <TableCell colspan="3">Mostrando 5 de 228 itens</TableCell>
+          <TableCell colspan="3">Mostrando 5 de {{ attendees.length }} itens</TableCell>
           <TableCell colspan="3" class="text-right">
             <div class="inline-flex items-center gap-8">
-              <span>Página 1 de 23</span>
+              <span>Página 1 de {{ attendees.length / 5 }}</span>
 
               <div class="flex gap-1.5">
                 <IconButton>
