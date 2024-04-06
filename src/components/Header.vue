@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import nlwUniteIcon from '../assets/nlw-unite-icon.svg'
+import NavLink from './NavLink.vue'
 </script>
 
 <template>
@@ -7,8 +8,8 @@ import nlwUniteIcon from '../assets/nlw-unite-icon.svg'
     <img :src="nlwUniteIcon" />
 
     <nav class="flex items-center gap-5">
-      <a href="" class="font-semibold text-sm text-zinc-300">Eventos</a>
-      <a href="" class="font-semibold text-sm">Participantes</a>
+      <NavLink href="/eventos">Eventos</NavLink>
+      <NavLink href="/participantes">Participantes</NavLink>
     </nav>
   </header>
 </template>
