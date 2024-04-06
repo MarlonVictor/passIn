@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { formatDistanceToNow } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
+
 import {
   ChevronLeft,
   ChevronRight,
@@ -14,6 +17,8 @@ import IconButton from './IconButton.vue'
 import Table from './table/Table.vue'
 import TableCell from './table/TableCell.vue'
 import TableHeader from './table/TableHeader.vue'
+
+const dateConfig = { locale: ptBR, addSuffix: true }
 </script>
 
 <template>
@@ -72,8 +77,8 @@ import TableHeader from './table/TableHeader.vue'
               <span>{{ attendee.email }}</span>
             </div>
           </TableCell>
-          <TableCell>{{ attendee.createdAt.toISOString() }}</TableCell>
-          <TableCell>{{ attendee.checkedInAt.toISOString() }}</TableCell>
+          <TableCell>{{ formatDistanceToNow(attendee.createdAt, dateConfig) }}</TableCell>
+          <TableCell>{{ formatDistanceToNow(attendee.checkedInAt, dateConfig) }}</TableCell>
           <TableCell>
             <IconButton transparent>
               <MoreHorizontal class="size-4" />
