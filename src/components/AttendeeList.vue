@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { computed, ref } from 'vue'
 
 import {
   ChevronLeft,
@@ -19,6 +20,17 @@ import TableCell from './table/TableCell.vue'
 import TableHeader from './table/TableHeader.vue'
 
 const dateConfig = { locale: ptBR, addSuffix: true }
+
+const search = ref<string>('')
+
+// page configuration
+const page = ref<number>(1)
+const totalPages = computed(() => Math.ceil(attendees.length / 10))
+
+const goToNextPage = () => (page.value += 1)
+const goToPreviousPage = () => (page.value -= 1)
+const goToFirstPage = () => (page.value = 1)
+const goToLastPage = () => (page.value = totalPages.value)
 </script>
 
 <template>
@@ -31,6 +43,7 @@ const dateConfig = { locale: ptBR, addSuffix: true }
       >
         <Search class="size-4 text-emerald-200" />
         <input
+          v-model="search"
           placeholder="Buscar participante..."
           class="flex-1 bg-transparent outline-none border-none text-sm p-0"
         />
@@ -58,7 +71,7 @@ const dateConfig = { locale: ptBR, addSuffix: true }
 
       <tbody>
         <tr
-          v-for="attendee in attendees.slice(0, 5)"
+          v-for="attendee in attendees.slice((page - 1) * 10, page * 10)"
           :key="attendee.id"
           class="border-b border-white/10 hover:bg-zinc-50/5 transition-colors"
         >
@@ -89,22 +102,22 @@ const dateConfig = { locale: ptBR, addSuffix: true }
 
       <tfoot>
         <tr>
-          <TableCell colspan="3">Mostrando 5 de {{ attendees.length }} itens</TableCell>
+          <TableCell colspan="3">Mostrando 10 de {{ attendees.length }} itens</TableCell>
           <TableCell colspan="3" class="text-right">
             <div class="inline-flex items-center gap-8">
-              <span>Página 1 de {{ attendees.length / 5 }}</span>
+              <span>Página {{ page }} de {{ totalPages }}</span>
 
               <div class="flex gap-1.5">
-                <IconButton>
+                <IconButton :disabled="page === 1" @click="goToFirstPage">
                   <ChevronsLeft class="size-4" />
                 </IconButton>
-                <IconButton>
+                <IconButton :disabled="page === 1" @click="goToPreviousPage">
                   <ChevronLeft class="size-4" />
                 </IconButton>
-                <IconButton>
+                <IconButton :disabled="page === totalPages" @click="goToNextPage">
                   <ChevronRight class="size-4" />
                 </IconButton>
-                <IconButton>
+                <IconButton :disabled="page === totalPages" @click="goToLastPage">
                   <ChevronsRight class="size-4" />
                 </IconButton>
               </div>
