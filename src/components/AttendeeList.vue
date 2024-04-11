@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 import {
   ChevronLeft,
@@ -12,25 +12,60 @@ import {
   Search
 } from 'lucide-vue-next'
 
-import { attendees } from '@/data/attendees'
+// import { attendees } from '@/data/attendees'
 
 import IconButton from './IconButton.vue'
 import Table from './table/Table.vue'
 import TableCell from './table/TableCell.vue'
 import TableHeader from './table/TableHeader.vue'
 
-const dateConfig = { locale: ptBR, addSuffix: true }
+interface Attendee {
+  id: string
+  name: string
+  email: string
+  createdAt: string
+  checkedInAt: string | null
+}
 
-const search = ref<string>('')
+const dateConfig = { locale: ptBR, addSuffix: true }
 
 // page configuration
 const page = ref<number>(1)
-const totalPages = computed(() => Math.ceil(attendees.length / 10))
+const total = ref<number>(0)
+const totalPages = computed(() => Math.ceil(total.value / 10))
 
 const goToNextPage = () => (page.value += 1)
 const goToPreviousPage = () => (page.value -= 1)
 const goToFirstPage = () => (page.value = 1)
 const goToLastPage = () => (page.value = totalPages.value)
+
+// fetching data
+const search = ref<string>('')
+const attendees = ref<Attendee[]>([])
+
+watch(
+  () => [page.value, search.value],
+  () => {
+    const url = new URL(
+      'http://localhost:3333/events/9e9bd979-9d10-4915-b339-3786b1634f33/attendees'
+    )
+
+    url.searchParams.set('pageIndex', String(page.value - 1))
+
+    if (search.value.length > 0) {
+      url.searchParams.set('query', search.value)
+      page.value = 1
+    }
+
+    fetch(url)
+      .then((res) => res.json())
+      .then((data) => {
+        attendees.value = data.attendees
+        total.value = data.total
+      })
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
@@ -45,7 +80,7 @@ const goToLastPage = () => (page.value = totalPages.value)
         <input
           v-model="search"
           placeholder="Buscar participante..."
-          class="flex-1 bg-transparent outline-none border-none text-sm p-0"
+          class="flex-1 bg-transparent outline-none border-none text-sm p-0 focus:ring-0"
         />
       </div>
     </div>
@@ -71,7 +106,7 @@ const goToLastPage = () => (page.value = totalPages.value)
 
       <tbody>
         <tr
-          v-for="attendee in attendees.slice((page - 1) * 10, page * 10)"
+          v-for="attendee in attendees"
           :key="attendee.id"
           class="border-b border-white/10 hover:bg-zinc-50/5 transition-colors"
         >
@@ -83,15 +118,23 @@ const goToLastPage = () => (page.value = totalPages.value)
               class="size-4 bg-black/20 rounded border-white/10 cursor-pointer"
             />
           </TableCell>
-          <TableCell>{{ attendee.id }}</TableCell>
+          <TableCell>{{ attendee?.id }}</TableCell>
           <TableCell>
             <div class="flex flex-col gap-1">
-              <span class="font-semibold text-white">{{ attendee.name }}</span>
-              <span>{{ attendee.email }}</span>
+              <span class="font-semibold text-white">{{ attendee?.name }}</span>
+              <span>{{ attendee?.email }}</span>
             </div>
           </TableCell>
-          <TableCell>{{ formatDistanceToNow(attendee.createdAt, dateConfig) }}</TableCell>
-          <TableCell>{{ formatDistanceToNow(attendee.checkedInAt, dateConfig) }}</TableCell>
+          <TableCell>
+            {{ formatDistanceToNow(attendee.createdAt, dateConfig) }}
+          </TableCell>
+          <TableCell>
+            {{
+              attendee.checkedInAt
+                ? formatDistanceToNow(attendee.checkedInAt, dateConfig)
+                : 'Não fez check-in'
+            }}
+          </TableCell>
           <TableCell>
             <IconButton transparent>
               <MoreHorizontal class="size-4" />
@@ -102,7 +145,7 @@ const goToLastPage = () => (page.value = totalPages.value)
 
       <tfoot>
         <tr>
-          <TableCell colspan="3">Mostrando 10 de {{ attendees.length }} itens</TableCell>
+          <TableCell colspan="3">Mostrando {{ attendees.length }} de {{ total }} itens</TableCell>
           <TableCell colspan="3" class="text-right">
             <div class="inline-flex items-center gap-8">
               <span>Página {{ page }} de {{ totalPages }}</span>
