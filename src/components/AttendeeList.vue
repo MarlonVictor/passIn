@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 
 import {
   ChevronLeft,
@@ -30,9 +30,15 @@ interface Attendee {
 const dateConfig = { locale: ptBR, addSuffix: true }
 
 // page configuration
-const page = ref<number>(1)
+const page = ref<number>(0)
 const total = ref<number>(0)
 const totalPages = computed(() => Math.ceil(total.value / 10))
+
+const setCurrentPage = (page: number) => {
+  const url = new URL(window.location.toString())
+  url.searchParams.set('page', String(page))
+  window.history.pushState({}, '', url)
+}
 
 const goToNextPage = () => (page.value += 1)
 const goToPreviousPage = () => (page.value -= 1)
@@ -42,6 +48,12 @@ const goToLastPage = () => (page.value = totalPages.value)
 // fetching data
 const search = ref<string>('')
 const attendees = ref<Attendee[]>([])
+
+const setCurrentSearch = (search: string) => {
+  const url = new URL(window.location.toString())
+  url.searchParams.set('search', search)
+  window.history.pushState({}, '', url)
+}
 
 watch(
   () => [page.value, search.value],
@@ -57,15 +69,30 @@ watch(
       page.value = 1
     }
 
+    // url state
+    setCurrentPage(page.value)
+    setCurrentSearch(search.value)
+
     fetch(url)
       .then((res) => res.json())
       .then((data) => {
         attendees.value = data.attendees
         total.value = data.total
       })
-  },
-  { immediate: true }
+  }
 )
+
+onMounted(() => {
+  const url = new URL(window.location.toString())
+
+  url.searchParams.has('page')
+    ? (page.value = Number(url.searchParams.get('page')))
+    : (page.value = 1)
+
+  url.searchParams.has('search')
+    ? (search.value = url.searchParams.get('search') ?? '')
+    : (search.value = '')
+})
 </script>
 
 <template>
